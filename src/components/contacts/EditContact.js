@@ -2,14 +2,25 @@ import React, { Component } from 'react';
 import { Consumer } from '../../context';
 import TextInputGroup from '../layout/TextInputGroup';
 // import uuidv5 from 'uuid';
-import axios from 'axios'
+import axios from 'axios';
 
-export default class AddContact extends Component {
+export default class EditContact extends Component {
     state = {
         name: '',
         email: '',
         phone: '',
-        errors: {}
+        errors: {},
+    }
+
+    async componentDidMount() {
+        const { id } = this.props.match.params;
+        const res = await axios.get(`https://jsonplaceholder.typicode.com/users/${id}`);
+        const {name, phone, email} = res.data;
+        this.setState({
+            name: name,
+            email: email,
+            phone: phone
+        })
     }
 
     onChange = e => {
@@ -35,16 +46,15 @@ export default class AddContact extends Component {
             return;
         }
 
-        const newContact = {
-            // id: uuidv5(),
+        const updContact = {
             name,
             email,
             phone
         }
 
-        const resp = await axios.post('https://jsonplaceholder.typicode.com/users', newContact)
-        
-        dispatch({ type: 'ADD_CONTACT', payload: resp.data });
+        const { id } = this.props.match.params;
+        const res = await axios.put(`https://jsonplaceholder.typicode.com/users/${id}`, updContact);
+        dispatch({type: 'UPDATE_CONTACT', payload: res.data});
 
         // clear state
         this.setState({
@@ -66,7 +76,7 @@ export default class AddContact extends Component {
                     const { dispatch } = value;
                     return (
                         <div className="card mb-3">
-                            <div className="card-header">Add Contact</div>
+                            <div className="card-header">Edit Contact</div>
                             <div className="card-body">
                                 <form onSubmit={e => { this.onSubmit(e, dispatch) }}>
                                     <TextInputGroup
@@ -78,7 +88,7 @@ export default class AddContact extends Component {
                                     <TextInputGroup
                                         label="Phone" name="phone" value={phone} placeholder="Enter phone..." onChange={this.onChange} error={errors.phone}
                                     />
-                                    <input type="submit" value="Add Contact" className="btn btn-info btn-block" />
+                                    <input type="submit" value="Edit Contact" className="btn btn-info btn-block" />
                                 </form>
                             </div>
                         </div>
